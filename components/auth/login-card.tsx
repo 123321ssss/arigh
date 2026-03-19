@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Panel } from "@/components/ui/panel";
@@ -21,7 +20,6 @@ export function LoginCard({ showDemoAccess }: LoginCardProps) {
       : "请输入可收邮件的邮箱，点击下方按钮后去邮箱打开登录链接。",
   );
   const [loading, setLoading] = useState(false);
-  const supabase = createSupabaseBrowserClient();
 
   async function loginDemo(role: "admin" | "member") {
     setLoading(true);
@@ -42,30 +40,29 @@ export function LoginCard({ showDemoAccess }: LoginCardProps) {
   }
 
   async function requestMagicLink() {
-    if (!email || !supabase) {
-      setMessage(
-        showDemoAccess
-          ? "当前未配置 Supabase，请先使用演示账号。"
-          : "当前 Supabase 尚未配置完整，请检查环境变量和控制台设置。",
-      );
+    if (!email) {
+      setMessage("请先输入邮箱。");
       return;
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
+    const response = await fetch("/api/auth/magic-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
     });
     setLoading(false);
 
-    if (error) {
-      setMessage(error.message);
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string; ok?: boolean }
+      | null;
+
+    if (!response.ok) {
+      setMessage(payload?.error ?? "发送失败，请稍后重试。");
       return;
     }
 
-    setMessage("魔法链接已发送，请检查企业邮箱。");
+    setMessage("登录链接已发送，请检查邮箱。");
   }
 
   return (
