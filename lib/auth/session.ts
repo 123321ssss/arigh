@@ -1,0 +1,98 @@
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+import { env, isSupabaseConfigured } from "@/lib/env";
+import { appRepository } from "@/lib/data/repository";
+
+export const DEMO_SESSION_COOKIE = "editorial_ai_demo_session";
+
+export function getAuthMode() {
+  if (env.APP_DEMO_MODE || !isSupabaseConfigured()) {
+    return "demo" as const;
+  }
+
+  return "supabase" as const;
+}
+
+function getDemoUserId(value: string | undefined) {
+  if (value === "admin") {
+    return "user-admin-1";
+  }
+
+  if (value === "member") {
+    return "user-member-1";
+  }
+
+  return value;
+}
+
+async function getSupabaseServerClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    env.NEXT_PUBLIC_SUPABASE_URL!,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(nextCookies) {
+          try {
+            nextCookies.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Server Components cannot always write cookies; route handlers can.
+          }
+        },
+      },
+    },
+  );
+}
+
+export async function getCurrentUser() {
+  if (getAuthMode() === "demo") {
+    const cookieStore = await cookies();
+    const demoUserId = getDemoUserId(cookieStore.get(DEMO_SESSION_COOKIE)?.value);
+    const userId = demoUserId ?? "user-member-1";
+
+    return appRepository.getUserById(userId);
+  }
+
+  const supabase = await getSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return null;
+  }
+
+  return appRepository.ensureSupabaseUser(user.email);
+}
+
+export async function requireUser() {
+  const user = await getCurrentUser();
+
+  if (!user || !user.active) {
+    redirect("/login");
+  }
+
+  return user;
+}
+
+export async function requireAdmin() {
+  const user = await requireUser();
+
+  if (user.role !== "admin") {
+    redirect("/app");
+  }
+
+  return user;
+}
+
+export function resolveDemoLoginTarget(role: "admin" | "member") {
+  return role === "admin" ? "user-admin-1" : "user-member-1";
+}

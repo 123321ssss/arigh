@@ -1,26 +1,71 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f6f0e4;
+  --paper-strong: #fffaf2;
+  --ink: #2d3b3b;
+  --ink-strong: #131f1e;
+  --muted: #6d7877;
+  --accent: #4db2aa;
+  --accent-soft: #72c4be;
+  --danger: #b8564a;
+  --admin-surface: #f1ebe0;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--paper);
+  --color-foreground: var(--ink-strong);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(77, 178, 170, 0.12), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(184, 86, 74, 0.1), transparent 24%),
+    var(--paper);
+  color: var(--ink-strong);
+  font-family: var(--font-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(77, 178, 170, 0.22);
+}
+
+.grain {
+  position: relative;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(19, 31, 30, 0.08) 0.8px, transparent 0.8px),
+    radial-gradient(rgba(19, 31, 30, 0.04) 0.8px, transparent 0.8px);
+  background-position: 0 0, 12px 12px;
+  background-size: 24px 24px;
+  mix-blend-mode: multiply;
+  opacity: 0.16;
 }
