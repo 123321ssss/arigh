@@ -4,6 +4,43 @@ import { env, isSupabaseConfigured } from "@/lib/env";
 
 export const runtime = "nodejs";
 
+function describeUnknownError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "Unknown fetch error";
+  }
+
+  const parts = [`${error.name}: ${error.message}`];
+  const cause = (error as Error & { cause?: unknown }).cause;
+
+  if (cause && typeof cause === "object") {
+    const maybeCause = cause as {
+      code?: unknown;
+      message?: unknown;
+      errno?: unknown;
+      syscall?: unknown;
+      address?: unknown;
+      port?: unknown;
+    };
+
+    const detail = [
+      maybeCause.code ? `code=${String(maybeCause.code)}` : null,
+      maybeCause.errno ? `errno=${String(maybeCause.errno)}` : null,
+      maybeCause.syscall ? `syscall=${String(maybeCause.syscall)}` : null,
+      maybeCause.address ? `address=${String(maybeCause.address)}` : null,
+      maybeCause.port ? `port=${String(maybeCause.port)}` : null,
+      maybeCause.message ? `message=${String(maybeCause.message)}` : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    if (detail) {
+      parts.push(detail);
+    }
+  }
+
+  return parts.join(" | ");
+}
+
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json(
@@ -38,6 +75,7 @@ export async function POST(request: Request) {
         gotrue_meta_security: {},
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
@@ -52,13 +90,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const detail =
-      error instanceof Error
-        ? `${error.name}: ${error.message}`
-        : "Unknown fetch error";
+    const detail = describeUnknownError(error);
 
     return NextResponse.json(
-      { error: `Supabase request failed. ${detail}` },
+      {
+        error: `Supabase request failed. ${detail}`,
+        endpointHost: new URL(endpoint).host,
+      },
       { status: 502 },
     );
   }
