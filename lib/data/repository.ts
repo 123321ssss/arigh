@@ -136,6 +136,29 @@ function isBootstrapEligible(state: DemoState) {
   return !state.profiles.some((profile) => !profile.email.endsWith("@editorial.local"));
 }
 
+function getRoleFromMetadata(metadata: Record<string, unknown> | null | undefined) {
+  const candidate = metadata?.app_role ?? metadata?.role;
+  return candidate === "admin" || candidate === "member" ? candidate : null;
+}
+
+function getBooleanFromMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+  key: string,
+) {
+  const value = metadata?.[key];
+  return typeof value === "boolean" ? value : null;
+}
+
+function getDisplayNameFromMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+  email: string,
+) {
+  const displayName = metadata?.display_name;
+  return typeof displayName === "string" && displayName.trim()
+    ? displayName.trim()
+    : buildDisplayNameFromEmail(email);
+}
+
 export type SaveConversationSnapshotInput = {
   conversationId: string;
   userId: string;
@@ -159,10 +182,22 @@ export const appRepository = {
     );
   },
 
-  async ensureSupabaseUser(email: string) {
+  async ensureSupabaseUser(identity: {
+    id: string;
+    email: string;
+    appMetadata?: Record<string, unknown> | null;
+    userMetadata?: Record<string, unknown> | null;
+    lastSignInAt?: string | null;
+  }) {
     const state = getState();
-    const normalizedEmail = email.trim().toLowerCase();
-    const now = new Date().toISOString();
+    const normalizedEmail = identity.email.trim().toLowerCase();
+    const now = identity.lastSignInAt ?? new Date().toISOString();
+    const roleFromMetadata =
+      getRoleFromMetadata(identity.appMetadata) ??
+      getRoleFromMetadata(identity.userMetadata);
+    const activeFromMetadata =
+      getBooleanFromMetadata(identity.appMetadata, "active") ??
+      getBooleanFromMetadata(identity.userMetadata, "active");
     const existingIndex = state.profiles.findIndex(
       (profile) => profile.email.toLowerCase() === normalizedEmail,
     );
@@ -170,6 +205,10 @@ export const appRepository = {
     if (existingIndex !== -1) {
       state.profiles[existingIndex] = {
         ...state.profiles[existingIndex],
+        id: identity.id,
+        role: roleFromMetadata ?? state.profiles[existingIndex].role,
+        active: activeFromMetadata ?? state.profiles[existingIndex].active,
+        displayName: getDisplayNameFromMetadata(identity.userMetadata, normalizedEmail),
         recentLoginAt: now,
       };
       return clone(state.profiles[existingIndex]);
@@ -188,6 +227,8 @@ export const appRepository = {
         ...state.invites[inviteIndex],
         status: "accepted",
       };
+    } else if (roleFromMetadata) {
+      role = roleFromMetadata;
     } else if (isBootstrapEligible(state)) {
       role = "admin";
     }
@@ -197,12 +238,12 @@ export const appRepository = {
     }
 
     const profile: SessionUser = {
-      id: crypto.randomUUID(),
+      id: identity.id,
       email: normalizedEmail,
-      displayName: buildDisplayNameFromEmail(normalizedEmail),
+      displayName: getDisplayNameFromMetadata(identity.userMetadata, normalizedEmail),
       role,
       language: "zh-CN",
-      active: true,
+      active: activeFromMetadata ?? true,
       budget: getDefaultBudget(role),
       recentLoginAt: now,
     };

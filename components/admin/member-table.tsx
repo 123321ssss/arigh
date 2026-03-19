@@ -19,18 +19,41 @@ export function MemberTable({
   const router = useRouter();
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"member" | "admin">("member");
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [submittingInvite, setSubmittingInvite] = useState(false);
 
   async function submitInvite() {
-    if (!inviteEmail) {
+    const normalizedEmail = inviteEmail.trim();
+    if (!normalizedEmail) {
+      setInviteError("请先输入受邀邮箱。");
+      setInviteMessage(null);
       return;
     }
 
-    await fetch("/api/admin/invites", {
+    setSubmittingInvite(true);
+    setInviteError(null);
+    setInviteMessage(null);
+
+    const response = await fetch("/api/admin/invites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      body: JSON.stringify({ email: normalizedEmail, role: inviteRole }),
     });
+
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string; message?: string }
+      | null;
+
+    setSubmittingInvite(false);
+
+    if (!response.ok) {
+      setInviteError(payload?.error ?? "邀请失败，请稍后重试。");
+      return;
+    }
+
     setInviteEmail("");
+    setInviteMessage(payload?.message ?? `邀请邮件已发送到 ${normalizedEmail}。`);
     startTransition(() => router.refresh());
   }
 
@@ -45,23 +68,30 @@ export function MemberTable({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto]">
-        <Input
-          placeholder="邀请邮箱，例如 writer@company.com"
-          value={inviteEmail}
-          onChange={(event) => setInviteEmail(event.target.value)}
-        />
-        <Select
-          value={inviteRole}
-          onChange={(event) => setInviteRole(event.target.value as "member" | "admin")}
-        >
-          <option value="member">成员</option>
-          <option value="admin">管理员</option>
-        </Select>
-        <Button type="button" onClick={submitInvite}>
-          发送邀请
-        </Button>
+      <div className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto]">
+          <Input
+            placeholder="邀请邮箱，例如 writer@company.com"
+            value={inviteEmail}
+            onChange={(event) => setInviteEmail(event.target.value)}
+          />
+          <Select
+            value={inviteRole}
+            onChange={(event) => setInviteRole(event.target.value as "member" | "admin")}
+          >
+            <option value="member">成员</option>
+            <option value="admin">管理员</option>
+          </Select>
+          <Button type="button" onClick={submitInvite} disabled={submittingInvite}>
+            {submittingInvite ? "发送中..." : "发送邀请"}
+          </Button>
+        </div>
+        {inviteMessage ? (
+          <p className="text-sm text-emerald-700">{inviteMessage}</p>
+        ) : null}
+        {inviteError ? <p className="text-sm text-rose-600">{inviteError}</p> : null}
       </div>
+
       <div className="overflow-hidden rounded-[26px] border border-[rgba(19,31,30,0.08)]">
         <table className="w-full border-collapse text-sm">
           <thead className="bg-[rgba(19,31,30,0.05)] text-left text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
@@ -116,15 +146,21 @@ export function MemberTable({
           </tbody>
         </table>
       </div>
+
       <div className="rounded-[24px] border border-[rgba(19,31,30,0.08)] bg-[rgba(255,255,255,0.72)] p-4">
-        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">邀请记录</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
+          邀请记录
+        </p>
         <div className="mt-3 space-y-2 text-sm">
           {invites.map((invite) => (
-            <div key={invite.id} className="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(19,31,30,0.04)] px-4 py-3">
+            <div
+              key={invite.id}
+              className="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(19,31,30,0.04)] px-4 py-3"
+            >
               <div>
                 <p className="font-medium text-[var(--ink-strong)]">{invite.email}</p>
                 <p className="text-xs text-[var(--muted)]">
-                  {invite.role} · {invite.status}
+                  {invite.role} / {invite.status}
                 </p>
               </div>
               <p className="text-xs text-[var(--muted)]">{formatDateTime(invite.createdAt)}</p>

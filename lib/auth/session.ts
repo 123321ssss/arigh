@@ -70,7 +70,13 @@ export async function getCurrentUser() {
     return null;
   }
 
-  return appRepository.ensureSupabaseUser(user.email);
+  return appRepository.ensureSupabaseUser({
+    id: user.id,
+    email: user.email,
+    appMetadata: user.app_metadata,
+    userMetadata: user.user_metadata,
+    lastSignInAt: user.last_sign_in_at,
+  });
 }
 
 export async function requireUser() {
