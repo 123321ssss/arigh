@@ -1,7 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 import { env, isSupabaseConfigured } from "@/lib/env";
+
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -18,27 +19,47 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "请提供邮箱地址。" }, { status: 400 });
   }
 
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL!,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
+  const endpoint = `${env.NEXT_PUBLIC_SUPABASE_URL!}/auth/v1/otp?redirect_to=${encodeURIComponent(
+    env.APP_URL,
+  )}`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        "Content-Type": "application/json",
       },
-    },
-  );
+      body: JSON.stringify({
+        email,
+        data: {},
+        create_user: true,
+        gotrue_meta_security: {},
+      }),
+      cache: "no-store",
+    });
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: env.APP_URL,
-    },
-  });
+    if (!response.ok) {
+      const text = await response.text();
+      return NextResponse.json(
+        {
+          error: text || `Supabase OTP request failed with status ${response.status}.`,
+        },
+        { status: response.status },
+      );
+    }
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const detail =
+      error instanceof Error
+        ? `${error.name}: ${error.message}`
+        : "Unknown fetch error";
+
+    return NextResponse.json(
+      { error: `Supabase request failed. ${detail}` },
+      { status: 502 },
+    );
   }
-
-  return NextResponse.json({ ok: true });
 }
