@@ -60,7 +60,7 @@ function Provider({
 }
 
 function Frame({ children }: { children: React.ReactNode }) {
-  return <Panel className="space-y-4 p-5">{children}</Panel>;
+  return <Panel className="space-y-4 p-4">{children}</Panel>;
 }
 
 function InputField() {
@@ -79,6 +79,7 @@ function InputField() {
     >
       <Textarea
         value={input}
+        className="min-h-[108px]"
         placeholder="输入一个要执行的任务，例如：整理今天的会议纪要、生成上线检查清单、总结本周模型成本。"
         onChange={(event) => setInput(event.target.value)}
       />
@@ -336,8 +337,10 @@ export function AgentChatWorkspace(props: {
 
   return (
     <ChatComposer.Provider value={value}>
-      <div className="grid gap-5">
-        <ChatThread messages={messages} user={props.user} />
+      <div className="flex h-full min-h-0 flex-col gap-3">
+        <div className="min-h-0 flex-1">
+          <ChatThread messages={messages} user={props.user} />
+        </div>
         <ChatComposer.Frame>
           <div className="flex items-end justify-between gap-3">
             <div>

@@ -64,7 +64,7 @@ export function ChatThread({
   user: SessionUser;
 }) {
   return (
-    <Panel className="flex min-h-[500px] flex-1 flex-col gap-5 p-5 md:p-6">
+    <Panel className="flex h-full min-h-0 flex-1 flex-col gap-4 p-4 md:p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">

@@ -12,7 +12,7 @@ import { Panel } from "@/components/ui/panel";
 import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 
 function Root({ children }: { children: React.ReactNode }) {
-  return <Panel className="flex min-h-[520px] flex-col gap-4 p-4">{children}</Panel>;
+  return <Panel className="flex h-full min-h-0 flex-col gap-4 p-4">{children}</Panel>;
 }
 
 function List({ children }: { children: React.ReactNode }) {
