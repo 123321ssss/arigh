@@ -2,8 +2,8 @@ import { Bot, Wrench } from "lucide-react";
 import type { UIMessage } from "ai";
 
 import { AvatarChip } from "@/components/ui/avatar-chip";
-import { Panel } from "@/components/ui/panel";
 import { Badge } from "@/components/ui/badge";
+import { Panel } from "@/components/ui/panel";
 import type { MessageMeta, SessionUser } from "@/lib/domain/types";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ function renderPart(part: UIMessage["parts"][number], index: number) {
     return (
       <div
         key={index}
-        className="rounded-[22px] border border-[rgba(19,31,30,0.08)] bg-[rgba(255,255,255,0.7)] p-4"
+        className="rounded-[22px] border border-[rgba(19,31,30,0.08)] bg-[rgba(255,255,255,0.72)] p-4"
       >
         <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
           <Wrench className="h-3.5 w-3.5" />
@@ -64,7 +64,7 @@ export function ChatThread({
   user: SessionUser;
 }) {
   return (
-    <Panel className="min-h-[520px] flex-1 space-y-5 overflow-hidden p-5 md:p-6">
+    <Panel className="flex min-h-[500px] flex-1 flex-col gap-5 p-5 md:p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
@@ -76,10 +76,10 @@ export function ChatThread({
         </div>
         <Badge>{messages.length} 条消息</Badge>
       </div>
-      <div className="space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto pr-1">
         {messages.length === 0 ? (
           <div className="rounded-[30px] border border-dashed border-[rgba(19,31,30,0.12)] bg-[rgba(255,255,255,0.55)] p-10 text-center text-sm leading-7 text-[var(--muted)]">
-            从下方输入一个任务，系统会把流式输出、工具调用和成本记录落在同一条工作线上。
+            从下方输入一个任务，系统会在同一条工作流中展示流式回复、工具调用和模型标记。
           </div>
         ) : null}
         {messages.map((message) => {
@@ -100,7 +100,7 @@ export function ChatThread({
                   "rounded-[28px] border px-5 py-4",
                   isUser
                     ? "order-first border-[rgba(19,31,30,0.08)] bg-[rgba(19,31,30,0.92)] text-[var(--paper)] md:order-none"
-                    : "border-[rgba(19,31,30,0.08)] bg-white/82 text-[var(--ink-strong)]",
+                    : "border-[rgba(19,31,30,0.08)] bg-white/84 text-[var(--ink-strong)]",
                 )}
               >
                 <div className="mb-4 flex items-center justify-between gap-3">

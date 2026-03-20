@@ -31,7 +31,7 @@ function RunCard({ run }: { run: AgentRun }) {
             <span>{run.traceId}</span>
           </div>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
-            {run.modelKey} · {formatDateTime(run.startedAt)}
+            {run.modelKey} / {formatDateTime(run.startedAt)}
           </p>
         </div>
         <Badge>{run.status}</Badge>
@@ -76,7 +76,7 @@ export function AgentTimelineCard({ runs }: { runs: AgentRun[] }) {
       <div className="space-y-3">
         {runs.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-[rgba(19,31,30,0.12)] p-5 text-sm leading-7 text-[var(--muted)]">
-            当前会话还没有记录到工具调用。启用模板查询、白名单抓取或计算时，这里会显示完整轨迹。
+            当前会话还没有工具调用。启用模板查询、白名单抓取或计算工具后，这里会出现完整轨迹。
           </div>
         ) : null}
         {runs.map((run) => (

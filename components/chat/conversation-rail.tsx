@@ -6,17 +6,17 @@ import { Plus, Trash2 } from "lucide-react";
 import { startTransition, useState } from "react";
 
 import type { ConversationSummary, ModelConfig } from "@/lib/domain/types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
-import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 
 function Root({ children }: { children: React.ReactNode }) {
-  return <Panel className="flex h-full flex-col gap-4 p-4">{children}</Panel>;
+  return <Panel className="flex min-h-[520px] flex-col gap-4 p-4">{children}</Panel>;
 }
 
 function List({ children }: { children: React.ReactNode }) {
-  return <div className="space-y-3">{children}</div>;
+  return <div className="flex-1 space-y-3 overflow-y-auto pr-1">{children}</div>;
 }
 
 function Item({
@@ -33,8 +33,8 @@ function Item({
       className={cn(
         "group rounded-[24px] border p-4 transition",
         selected
-          ? "border-[rgba(50,156,149,0.36)] bg-[rgba(50,156,149,0.12)]"
-          : "border-[rgba(19,31,30,0.08)] bg-white/70 hover:border-[rgba(19,31,30,0.16)]",
+          ? "border-[rgba(50,156,149,0.38)] bg-[rgba(50,156,149,0.12)]"
+          : "border-[rgba(19,31,30,0.08)] bg-white/74 hover:border-[rgba(19,31,30,0.16)] hover:bg-white/86",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -44,7 +44,7 @@ function Item({
               <p className="truncate text-sm font-semibold text-[var(--ink-strong)]">
                 {conversation.title}
               </p>
-              <Badge className="bg-transparent px-2 py-0.5 tracking-[0.18em]">
+              <Badge className="bg-transparent px-2 py-0.5 tracking-[0.16em]">
                 最近 {conversation.lastUsedModelKey}
               </Badge>
             </div>
@@ -112,10 +112,7 @@ export function ConversationRailCard({
   }
 
   async function deleteConversation(id: string) {
-    const response = await fetch(`/api/conversations/${id}`, {
-      method: "DELETE",
-    });
-
+    const response = await fetch(`/api/conversations/${id}`, { method: "DELETE" });
     if (!response.ok) {
       return;
     }

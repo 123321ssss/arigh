@@ -34,23 +34,27 @@ export default async function ConversationPage({
       user={user}
       currentPath="/app"
       title={conversation.title}
-      subtitle="消息流、模型切换、模板引用和 Agent 轨迹都在同一个工作台里协同更新。"
-      aside={<AgentTimelineCard runs={runs} />}
+      subtitle="在同一条会话中完成消息流、逐条模型切换和 Agent 工具执行。布局已经调整为宽画布，避免核心内容被挤压。"
     >
-      <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
-        <ConversationRailCard
-          conversations={conversations}
-          selectedConversationId={conversation.id}
-          defaultModel={defaultModel}
-        />
-        <AgentChatWorkspace
-          conversationId={conversation.id}
-          initialMessages={messages}
-          models={models.filter((model) => model.enabled)}
-          prompts={prompts}
-          user={user}
-          defaultModelKey={conversation.lastUsedModelKey}
-        />
+      <div className="grid gap-6 2xl:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="2xl:sticky 2xl:top-5 2xl:h-fit">
+          <ConversationRailCard
+            conversations={conversations}
+            selectedConversationId={conversation.id}
+            defaultModel={defaultModel}
+          />
+        </div>
+        <div className="grid gap-6">
+          <AgentChatWorkspace
+            conversationId={conversation.id}
+            initialMessages={messages}
+            models={models.filter((model) => model.enabled)}
+            prompts={prompts}
+            user={user}
+            defaultModelKey={conversation.lastUsedModelKey}
+          />
+          <AgentTimelineCard runs={runs} />
+        </div>
       </div>
     </MemberWorkspaceShell>
   );

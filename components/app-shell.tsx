@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 
 import type { SessionUser } from "@/lib/domain/types";
-import { Badge } from "@/components/ui/badge";
 import { AvatarChip } from "@/components/ui/avatar-chip";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,12 @@ function Root({ children, tone }: AppShellRootProps) {
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(50,156,149,0.16),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(181,90,74,0.12),transparent_28%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(19,31,30,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(19,31,30,0.08)_1px,transparent_1px)] [background-size:24px_24px]" />
-      <div className="relative mx-auto flex min-h-screen max-w-[1600px] gap-5 px-4 py-4 md:px-6">
+      <div
+        className={cn(
+          "relative mx-auto flex min-h-screen w-full gap-5 px-3 py-3 md:px-5 md:py-5",
+          tone === "admin" ? "max-w-[1700px]" : "max-w-[1880px]",
+        )}
+      >
         {children}
       </div>
     </div>
@@ -40,7 +45,7 @@ function Root({ children, tone }: AppShellRootProps) {
 
 function Sidebar({ children }: { children: React.ReactNode }) {
   return (
-    <aside className="hidden w-[320px] shrink-0 rounded-[34px] border border-[rgba(19,31,30,0.12)] bg-[rgba(21,27,27,0.92)] p-6 text-[var(--paper)] shadow-[0_26px_90px_rgba(6,10,10,0.28)] lg:flex lg:flex-col">
+    <aside className="hidden w-[298px] shrink-0 rounded-[34px] border border-[rgba(19,31,30,0.12)] bg-[rgba(21,27,27,0.92)] p-6 text-[var(--paper)] shadow-[0_26px_90px_rgba(6,10,10,0.28)] xl:flex xl:flex-col">
       {children}
     </aside>
   );
@@ -157,7 +162,7 @@ function WorkspaceSidebar({
               Editorial
             </p>
             <p className="text-sm text-[rgba(255,252,244,0.62)]">
-              内部 AI 工作台与控制面
+              Internal AI workspace and controls
             </p>
           </div>
         </div>
@@ -172,15 +177,15 @@ function WorkspaceSidebar({
           </div>
         </div>
         <div className="flex items-center justify-between rounded-2xl bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs text-[rgba(255,252,244,0.7)]">
-          <span>预算上限</span>
-          <span>${user.budget.monthlyUsdLimit.toFixed(2)}/月</span>
+          <span>Monthly budget</span>
+          <span>${user.budget.monthlyUsdLimit.toFixed(2)}/mo</span>
         </div>
         <form action="/api/auth/logout" method="post">
           <Button
             variant="ghost"
             className="w-full justify-between rounded-2xl text-[rgba(255,252,244,0.8)] hover:bg-[rgba(255,255,255,0.08)]"
           >
-            退出登录
+            Sign out
             <LogOut className="h-4 w-4" />
           </Button>
         </form>
@@ -204,14 +209,60 @@ export function MemberWorkspaceShell({
 
   return (
     <AppShell.Root tone="member">
-      <AppShell.Sidebar>
-        <WorkspaceSidebar user={user} currentPath={currentPath} items={items} badgeText="成员工作区" />
-      </AppShell.Sidebar>
       <AppShell.Main>
-        <AppShell.Header eyebrow="Member Workspace" title={title} subtitle={subtitle} />
+        <header className="rounded-[34px] border border-[rgba(19,31,30,0.1)] bg-[linear-gradient(145deg,rgba(255,252,244,0.9),rgba(244,237,225,0.84))] px-5 py-5 shadow-[0_18px_60px_rgba(21,31,31,0.08)] backdrop-blur md:px-7 md:py-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Badge>Member Workspace</Badge>
+              <Badge className="border-[rgba(19,31,30,0.12)] bg-[rgba(19,31,30,0.03)]">
+                Budget ${user.budget.monthlyUsdLimit.toFixed(2)}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="rounded-2xl border border-[rgba(19,31,30,0.12)] bg-white/70 px-3 py-2">
+                <p className="text-xs text-[var(--muted)]">{user.email}</p>
+                <p className="text-sm font-medium text-[var(--ink-strong)]">{user.displayName}</p>
+              </div>
+              <form action="/api/auth/logout" method="post">
+                <Button variant="ghost" className="rounded-2xl">
+                  退出
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </div>
+          <div className="mt-4 flex w-full gap-2 overflow-x-auto pb-1">
+            {items.map((item) => {
+              const active = currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "inline-flex min-w-fit items-center gap-2 rounded-2xl px-4 py-2 text-sm transition",
+                    active
+                      ? "bg-[rgba(19,31,30,0.92)] text-[var(--paper)]"
+                      : "border border-[rgba(19,31,30,0.12)] bg-white/70 text-[var(--ink-strong)] hover:bg-white",
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="mt-5 space-y-2">
+            <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--ink-strong)] md:text-[2.55rem]">
+              {title}
+            </h1>
+            <p className="max-w-4xl text-sm leading-7 text-[var(--muted)] md:text-[15px]">
+              {subtitle}
+            </p>
+          </div>
+        </header>
         {children}
+        {aside ? <div className="grid gap-5">{aside}</div> : null}
       </AppShell.Main>
-      {aside ? <AppShell.Aside>{aside}</AppShell.Aside> : null}
     </AppShell.Root>
   );
 }

@@ -8,12 +8,12 @@ import { useRouter } from "next/navigation";
 import type { UIMessage } from "ai";
 
 import type { ModelConfig, PromptTemplate, SessionUser } from "@/lib/domain/types";
+import { ChatThread } from "@/components/chat/chat-thread";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ChatThread } from "@/components/chat/chat-thread";
 import { cn, formatCurrency } from "@/lib/utils";
 
 type ChatComposerContextValue = {
@@ -43,11 +43,9 @@ const ChatComposerContext = createContext<ChatComposerContextValue | null>(null)
 
 function useChatComposerContext() {
   const value = use(ChatComposerContext);
-
   if (!value) {
     throw new Error("ChatComposer components must be used inside AgentChatComposer.");
   }
-
   return value;
 }
 
@@ -81,7 +79,7 @@ function InputField() {
     >
       <Textarea
         value={input}
-        placeholder="输入一个成员可执行任务，例如：整理上线值班卡片、复盘本周模型成本、生成管理公告。"
+        placeholder="输入一个要执行的任务，例如：整理今天的会议纪要、生成上线检查清单、总结本周模型成本。"
         onChange={(event) => setInput(event.target.value)}
       />
       <div className="flex items-center justify-between gap-3">
@@ -111,8 +109,8 @@ function Controls() {
   const estimatedDraftCost = deferredMessages.length * 0.0125;
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
-      <div className="space-y-2">
+    <div className="grid gap-3 xl:grid-cols-12">
+      <div className="space-y-2 xl:col-span-4">
         <label className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
           本次消息模型
         </label>
@@ -123,9 +121,11 @@ function Controls() {
             </option>
           ))}
         </Select>
-        <p className="text-xs text-[var(--muted)]">切换只影响下一条发送，不会重写会话历史。</p>
+        <p className="text-xs text-[var(--muted)]">
+          切换只影响下一条发送，不会重写历史消息。
+        </p>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 xl:col-span-4">
         <label className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
           提示模板
         </label>
@@ -141,10 +141,10 @@ function Controls() {
           ))}
         </Select>
       </div>
-      <div className="flex flex-col justify-end gap-2">
+      <div className="flex flex-col justify-end gap-2 xl:col-span-4">
         <Button
           type="button"
-          className="w-full min-w-[168px]"
+          className="w-full"
           onClick={submit}
           disabled={status === "submitted" || status === "streaming"}
         >
