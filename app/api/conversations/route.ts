@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   await appRepository.addAuditLog(
     user.id,
     "chat.stream",
-    `创建了新会话 \`${conversation.title}\`。`,
+    `创建了新会话《${conversation.title}》。`,
   );
 
   return NextResponse.json(conversation);

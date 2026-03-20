@@ -34,7 +34,7 @@ export default async function ConversationPage({
       user={user}
       currentPath="/app"
       title={conversation.title}
-      subtitle="消息流、模型选择、模板引用和 Agent 轨迹在同一张工作台里协同更新。"
+      subtitle="消息流、模型切换、模板引用和 Agent 轨迹都在同一个工作台里协同更新。"
       aside={<AgentTimelineCard runs={runs} />}
     >
       <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
@@ -49,7 +49,7 @@ export default async function ConversationPage({
           models={models.filter((model) => model.enabled)}
           prompts={prompts}
           user={user}
-          defaultModelKey={conversation.modelKey}
+          defaultModelKey={conversation.lastUsedModelKey}
         />
       </div>
     </MemberWorkspaceShell>

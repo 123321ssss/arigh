@@ -40,16 +40,19 @@ function Item({
       <div className="flex items-start justify-between gap-3">
         <Link href={`/app/c/${conversation.id}`} className="min-w-0 flex-1">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <p className="truncate text-sm font-semibold text-[var(--ink-strong)]">
                 {conversation.title}
               </p>
               <Badge className="bg-transparent px-2 py-0.5 tracking-[0.18em]">
-                {conversation.modelKey}
+                最近 {conversation.lastUsedModelKey}
               </Badge>
             </div>
             <p className="line-clamp-2 text-xs leading-6 text-[var(--muted)]">
               {conversation.lastPreview}
+            </p>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+              默认模型 {conversation.defaultModelKey}
             </p>
           </div>
         </Link>
@@ -129,9 +132,7 @@ export function ConversationRailCard({
     <ConversationRail.Root>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-            对话索引
-          </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Conversations</p>
           <h2 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--ink-strong)]">
             会话目录
           </h2>

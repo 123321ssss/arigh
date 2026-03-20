@@ -6,20 +6,20 @@ import { appRepository } from "@/lib/data/repository";
 
 export default async function AdminMembersPage() {
   const admin = await requireAdmin();
-  const [members, invites] = await Promise.all([
+  const [members, inviteCodes] = await Promise.all([
     appRepository.listMembers(),
-    appRepository.listInvites(),
+    appRepository.listInviteCodes(),
   ]);
 
   return (
     <AdminWorkspaceShell
       user={admin}
       currentPath="/admin/members"
-      title="成员与邀请"
-      subtitle="采用邀请制账号管理。管理员可调整角色、启停成员，并追踪邀请状态。"
+      title="成员与邀请码"
+      subtitle="管理员在这里维护成员状态、角色和邀请码。邀请码支持限制次数、有效期和邮箱域名，不再依赖邀请邮件。"
     >
-      <AdminPanel.Section title="成员表" eyebrow="Accounts">
-        <MemberTable members={members} invites={invites} />
+      <AdminPanel.Section title="成员与准入" eyebrow="Accounts & Invite Codes">
+        <MemberTable members={members} inviteCodes={inviteCodes} />
       </AdminPanel.Section>
     </AdminWorkspaceShell>
   );

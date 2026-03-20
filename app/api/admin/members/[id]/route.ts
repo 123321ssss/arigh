@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/auth/session";
+import { createSupabaseAdminClient } from "@/lib/auth/supabase-admin";
 import { appRepository } from "@/lib/data/repository";
 
 export async function PATCH(
@@ -17,6 +18,16 @@ export async function PATCH(
 
   if (!member) {
     return NextResponse.json({ error: "Member not found." }, { status: 404 });
+  }
+
+  const supabaseAdmin = createSupabaseAdminClient();
+  if (supabaseAdmin) {
+    await supabaseAdmin.auth.admin.updateUserById(member.id, {
+      app_metadata: {
+        app_role: member.role,
+        active: member.active,
+      },
+    });
   }
 
   await appRepository.addAuditLog(

@@ -13,7 +13,7 @@ export default async function AdminUsagePage() {
       user={admin}
       currentPath="/admin/usage"
       title="用量与成本"
-      subtitle="基于 usage_events 聚合，按天和按模型观察调用分布，适合预算巡检。"
+      subtitle="基于 usage_events 聚合，按天和按模型观察调用分布，适合预算巡检和模型切换效果验证。"
     >
       <AdminPanel.Section title="用量面板" eyebrow="Usage Events">
         <UsagePanels summary={summary} />

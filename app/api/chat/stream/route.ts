@@ -12,7 +12,7 @@ import { getLanguageModel } from "@/lib/ai/provider";
 import { buildToolSet } from "@/lib/ai/tools";
 import { getCurrentUser } from "@/lib/auth/session";
 import { appRepository } from "@/lib/data/repository";
-import type { AgentRun, AgentRunStatus } from "@/lib/domain/types";
+import type { AgentRun, AgentRunStatus, MessageMeta, ModelConfig } from "@/lib/domain/types";
 import { isAiConfigured } from "@/lib/env";
 
 function latestRoleText(messages: UIMessage[], role: UIMessage["role"]) {
@@ -38,14 +38,47 @@ function buildMockText(params: {
   modelLabel: string;
 }) {
   return [
-    `已切换到本地演示流，当前模型视图为 ${params.modelLabel}。`,
-    params.promptName ? `已参考模板「${params.promptName}」整理回答。` : "当前未引用模板。",
+    `当前未接入真实 AI provider，已切到本地演示流，当前模型为 ${params.modelLabel}。`,
+    params.promptName ? `本次回答参考了提示模板《${params.promptName}》。` : "本次回答未使用提示模板。",
     `你的问题是：${params.question}`,
-    "建议输出结构如下：",
+    "建议输出结构：",
     "1. 先给出可执行结论。",
-    "2. 再按风险、优先级、行动项三栏压缩。",
-    "3. 若要复盘成本或模型策略，再追加一条预算提醒。",
+    "2. 再按风险、优先级和行动项压缩。",
+    "3. 如需复盘成本或模型策略，再补一段预算提醒。",
   ].join("\n");
+}
+
+function decorateMessagesWithModel(
+  uiMessages: UIMessage[],
+  model: ModelConfig,
+  promptTemplateId?: string | null,
+) {
+  const nextMessages = uiMessages.map((message) => ({ ...message }));
+  const metadata: MessageMeta = {
+    modelKey: model.key,
+    modelLabel: model.label,
+    promptTemplateId: promptTemplateId ?? null,
+  };
+
+  for (let index = nextMessages.length - 1; index >= 0; index -= 1) {
+    const message = nextMessages[index];
+    if (message.role !== "assistant") {
+      continue;
+    }
+
+    nextMessages[index] = {
+      ...message,
+      metadata: {
+        ...(message.metadata && typeof message.metadata === "object"
+          ? (message.metadata as Record<string, unknown>)
+          : {}),
+        ...metadata,
+      },
+    };
+    break;
+  }
+
+  return nextMessages;
 }
 
 function makeAgentRun(params: {
@@ -95,7 +128,7 @@ export async function POST(request: Request) {
   }
 
   const [model, promptTemplate, usageSummary, tools] = await Promise.all([
-    appRepository.getModel(body.modelKey ?? conversation.modelKey),
+    appRepository.getModel(body.modelKey ?? conversation.lastUsedModelKey),
     appRepository.getPromptTemplate(body.promptTemplateId),
     appRepository.getUsageSummary(user.id),
     buildToolSet(),
@@ -144,6 +177,11 @@ export async function POST(request: Request) {
       originalMessages: uiMessages,
       responseText,
     });
+    const finalMessages = decorateMessagesWithModel(
+      mock.messages,
+      model,
+      body.promptTemplateId,
+    );
 
     agentSteps.push({
       id: crypto.randomUUID(),
@@ -152,8 +190,8 @@ export async function POST(request: Request) {
       startedAt,
       finishedAt: new Date().toISOString(),
       detail: promptTemplate
-        ? `已参考模板「${promptTemplate.name}」生成演示回答。`
-        : "当前未配置真实 AI Provider，返回本地演示流。",
+        ? `参考模板《${promptTemplate.name}》生成本地演示回答。`
+        : "当前未接入真实 AI provider，返回本地演示流。",
     });
 
     await Promise.all([
@@ -161,7 +199,7 @@ export async function POST(request: Request) {
         conversationId: conversation.id,
         userId: user.id,
         modelKey: model.key,
-        messages: mock.messages,
+        messages: finalMessages,
         estimatedCostUsd,
       }),
       appRepository.saveAgentRun(
@@ -187,10 +225,10 @@ export async function POST(request: Request) {
         latencyMs: 320,
         createdAt: new Date().toISOString(),
       }),
-        appRepository.addAuditLog(
-          user.id,
-          "chat.stream",
-          `在会话 ${conversation.title} 中触发了本地演示流。`,
+      appRepository.addAuditLog(
+        user.id,
+        "chat.stream",
+        `在会话《${conversation.title}》中触发了 ${model.label} 的本地演示流。`,
       ),
     ]);
 
@@ -221,11 +259,7 @@ export async function POST(request: Request) {
   const result = streamText({
     model: languageModel,
     messages: modelMessages,
-    system: [
-      model.defaultSystemPrompt,
-      model.promptPrefix,
-      promptTemplate?.content,
-    ]
+    system: [model.defaultSystemPrompt, model.promptPrefix, promptTemplate?.content]
       .filter(Boolean)
       .join("\n\n"),
     tools,
@@ -277,13 +311,14 @@ export async function POST(request: Request) {
         inputTokens,
         outputTokens,
       });
+      const finalMessages = decorateMessagesWithModel(messages, model, body.promptTemplateId);
 
       await Promise.all([
         appRepository.saveConversationSnapshot({
           conversationId: conversation.id,
           userId: user.id,
           modelKey: model.key,
-          messages,
+          messages: finalMessages,
           estimatedCostUsd,
         }),
         appRepository.saveAgentRun(
@@ -312,7 +347,7 @@ export async function POST(request: Request) {
         appRepository.addAuditLog(
           user.id,
           "chat.stream",
-          `在会话 ${conversation.title} 中完成了一次流式推理。`,
+          `在会话《${conversation.title}》中完成了一次 ${model.label} 调用。`,
         ),
       ]);
     },

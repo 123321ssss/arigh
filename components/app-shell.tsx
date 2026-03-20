@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { Bot, FileText, LayoutDashboard, LogOut, MessageSquare, Settings2, Shield, Users } from "lucide-react";
+import {
+  Bot,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  Settings2,
+  Shield,
+  Users,
+} from "lucide-react";
 
 import type { SessionUser } from "@/lib/domain/types";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +31,9 @@ function Root({ children, tone }: AppShellRootProps) {
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(50,156,149,0.16),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(181,90,74,0.12),transparent_28%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(19,31,30,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(19,31,30,0.08)_1px,transparent_1px)] [background-size:24px_24px]" />
-      <div className="relative mx-auto flex min-h-screen max-w-[1600px] gap-5 px-4 py-4 md:px-6">{children}</div>
+      <div className="relative mx-auto flex min-h-screen max-w-[1600px] gap-5 px-4 py-4 md:px-6">
+        {children}
+      </div>
     </div>
   );
 }
@@ -71,11 +82,7 @@ function Header({
 }
 
 function Aside({ children }: { children: React.ReactNode }) {
-  return (
-    <aside className="hidden w-[320px] shrink-0 flex-col gap-5 xl:flex">
-      {children}
-    </aside>
-  );
+  return <aside className="hidden w-[320px] shrink-0 flex-col gap-5 xl:flex">{children}</aside>;
 }
 
 export const AppShell = {
@@ -150,7 +157,7 @@ function WorkspaceSidebar({
               Editorial
             </p>
             <p className="text-sm text-[rgba(255,252,244,0.62)]">
-              内部 AI 工作台与审计控制台
+              内部 AI 工作台与控制面
             </p>
           </div>
         </div>
@@ -169,7 +176,10 @@ function WorkspaceSidebar({
           <span>${user.budget.monthlyUsdLimit.toFixed(2)}/月</span>
         </div>
         <form action="/api/auth/logout" method="post">
-          <Button variant="ghost" className="w-full justify-between rounded-2xl text-[rgba(255,252,244,0.8)] hover:bg-[rgba(255,255,255,0.08)]">
+          <Button
+            variant="ghost"
+            className="w-full justify-between rounded-2xl text-[rgba(255,252,244,0.8)] hover:bg-[rgba(255,255,255,0.08)]"
+          >
             退出登录
             <LogOut className="h-4 w-4" />
           </Button>
@@ -195,12 +205,7 @@ export function MemberWorkspaceShell({
   return (
     <AppShell.Root tone="member">
       <AppShell.Sidebar>
-        <WorkspaceSidebar
-          user={user}
-          currentPath={currentPath}
-          items={items}
-          badgeText="成员工作区"
-        />
+        <WorkspaceSidebar user={user} currentPath={currentPath} items={items} badgeText="成员工作区" />
       </AppShell.Sidebar>
       <AppShell.Main>
         <AppShell.Header eyebrow="Member Workspace" title={title} subtitle={subtitle} />
@@ -221,9 +226,9 @@ export function AdminWorkspaceShell({
 }: WorkspaceShellProps) {
   const items = [
     { href: "/admin", label: "总览", icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: "/admin/members", label: "成员", icon: <Users className="h-4 w-4" /> },
-    { href: "/admin/models", label: "模型", icon: <Bot className="h-4 w-4" /> },
-    { href: "/admin/prompts", label: "提示词", icon: <FileText className="h-4 w-4" /> },
+    { href: "/admin/members", label: "成员与邀请码", icon: <Users className="h-4 w-4" /> },
+    { href: "/admin/models", label: "模型目录", icon: <Bot className="h-4 w-4" /> },
+    { href: "/admin/prompts", label: "提示模板", icon: <FileText className="h-4 w-4" /> },
     { href: "/admin/usage", label: "用量", icon: <Shield className="h-4 w-4" /> },
     { href: "/admin/audit", label: "审计", icon: <Shield className="h-4 w-4" /> },
   ];

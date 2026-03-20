@@ -1,5 +1,5 @@
-import { completeAuthRequest } from "@/lib/auth/complete-auth-request";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  return completeAuthRequest(request);
+  return NextResponse.redirect(new URL("/login", request.url));
 }

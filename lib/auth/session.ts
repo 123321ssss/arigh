@@ -1,9 +1,9 @@
-import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { env, isSupabaseConfigured } from "@/lib/env";
 import { appRepository } from "@/lib/data/repository";
+import { createSupabaseServerClient } from "@/lib/auth/supabase-server";
 
 export const DEMO_SESSION_COOKIE = "editorial_ai_demo_session";
 
@@ -27,31 +27,6 @@ function getDemoUserId(value: string | undefined) {
   return value;
 }
 
-async function getSupabaseServerClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
-    env.NEXT_PUBLIC_SUPABASE_URL!,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(nextCookies) {
-          try {
-            nextCookies.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Server Components cannot always write cookies; route handlers can.
-          }
-        },
-      },
-    },
-  );
-}
-
 export async function getCurrentUser() {
   if (getAuthMode() === "demo") {
     const cookieStore = await cookies();
@@ -61,7 +36,10 @@ export async function getCurrentUser() {
     return appRepository.getUserById(userId);
   }
 
-  const supabase = await getSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return null;
+  }
   const {
     data: { user },
   } = await supabase.auth.getUser();

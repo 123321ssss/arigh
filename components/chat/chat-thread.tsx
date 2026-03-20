@@ -4,8 +4,8 @@ import type { UIMessage } from "ai";
 import { AvatarChip } from "@/components/ui/avatar-chip";
 import { Panel } from "@/components/ui/panel";
 import { Badge } from "@/components/ui/badge";
-import type { SessionUser } from "@/lib/domain/types";
-import { cn, formatDateTime } from "@/lib/utils";
+import type { MessageMeta, SessionUser } from "@/lib/domain/types";
+import { cn } from "@/lib/utils";
 
 function renderPart(part: UIMessage["parts"][number], index: number) {
   if (part.type === "text") {
@@ -48,6 +48,14 @@ function renderPart(part: UIMessage["parts"][number], index: number) {
   return null;
 }
 
+function readMetadata(metadata: UIMessage["metadata"]) {
+  if (!metadata || typeof metadata !== "object") {
+    return null;
+  }
+
+  return metadata as MessageMeta;
+}
+
 export function ChatThread({
   messages,
   user,
@@ -71,11 +79,12 @@ export function ChatThread({
       <div className="space-y-4">
         {messages.length === 0 ? (
           <div className="rounded-[30px] border border-dashed border-[rgba(19,31,30,0.12)] bg-[rgba(255,255,255,0.55)] p-10 text-center text-sm leading-7 text-[var(--muted)]">
-            从右侧输入一个任务，系统会将流式输出、工具调用和成本记录串成同一条工作线。
+            从下方输入一个任务，系统会把流式输出、工具调用和成本记录落在同一条工作线上。
           </div>
         ) : null}
         {messages.map((message) => {
           const isUser = message.role === "user";
+          const metadata = readMetadata(message.metadata);
 
           return (
             <div
@@ -85,11 +94,7 @@ export function ChatThread({
                 isUser && "md:grid-cols-[minmax(0,1fr)_52px]",
               )}
             >
-              {!isUser ? (
-                <AvatarChip fallback="AI" />
-              ) : (
-                <div className="hidden md:block" />
-              )}
+              {!isUser ? <AvatarChip fallback="AI" /> : <div className="hidden md:block" />}
               <div
                 className={cn(
                   "rounded-[28px] border px-5 py-4",
@@ -117,19 +122,24 @@ export function ChatThread({
                           isUser ? "text-[rgba(255,252,244,0.62)]" : "text-[var(--muted)]",
                         )}
                       >
-                        {formatDateTime(new Date())}
+                        {isUser ? "成员输入" : metadata?.modelLabel ?? "助手输出"}
                       </p>
                     </div>
                   </div>
-                  <Badge
-                    className={cn(
-                      isUser
-                        ? "border-[rgba(255,255,255,0.12)] bg-transparent text-[rgba(255,252,244,0.72)]"
-                        : undefined,
-                    )}
-                  >
-                    {message.role}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {metadata?.modelLabel && !isUser ? (
+                      <Badge>{metadata.modelLabel}</Badge>
+                    ) : null}
+                    <Badge
+                      className={cn(
+                        isUser
+                          ? "border-[rgba(255,255,255,0.12)] bg-transparent text-[rgba(255,252,244,0.72)]"
+                          : undefined,
+                      )}
+                    >
+                      {message.role}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="space-y-3">{message.parts.map(renderPart)}</div>
               </div>

@@ -81,12 +81,16 @@ function InputField() {
     >
       <Textarea
         value={input}
-        placeholder="输入一个成员可执行任务，例如：整理上线值班卡片、复盘本周模型成本、生成管理员公告。"
+        placeholder="输入一个成员可执行任务，例如：整理上线值班卡片、复盘本周模型成本、生成管理公告。"
         onChange={(event) => setInput(event.target.value)}
       />
       <div className="flex items-center justify-between gap-3">
         <div className="text-xs text-[var(--muted)]">
-          {error ? <span className="text-[var(--danger)]">{error}</span> : "支持流式回复与短任务 Agent。"}
+          {error ? (
+            <span className="text-[var(--danger)]">{error}</span>
+          ) : (
+            "支持流式回复、短任务 Agent 和逐消息模型切换。"
+          )}
         </div>
         <div className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
           {status === "submitted" || status === "streaming" ? "streaming" : "ready"}
@@ -110,19 +114,20 @@ function Controls() {
     <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
       <div className="space-y-2">
         <label className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-          模型
+          本次消息模型
         </label>
         <Select value={modelKey} onChange={(event) => setModelKey(event.target.value)}>
           {models.map((model) => (
             <option key={model.key} value={model.key}>
-              {model.label} · {model.enabled ? "可用" : "停用"}
+              {model.label} / {model.enabled ? "可用" : "停用"}
             </option>
           ))}
         </Select>
+        <p className="text-xs text-[var(--muted)]">切换只影响下一条发送，不会重写会话历史。</p>
       </div>
       <div className="space-y-2">
         <label className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-          提示词模板
+          提示模板
         </label>
         <Select
           value={promptTemplateId}
@@ -151,7 +156,7 @@ function Controls() {
           发送任务
         </Button>
         <Badge className="justify-center border-[rgba(19,31,30,0.08)]">
-          {user.displayName} · 草稿成本约 {formatCurrency(estimatedDraftCost)}
+          {user.displayName} / 草稿成本约 {formatCurrency(estimatedDraftCost)}
         </Badge>
       </div>
     </div>
@@ -181,9 +186,7 @@ export function AgentChatComposer({
   defaultModelKey: string;
 }) {
   const router = useRouter();
-  const [transport] = useState(
-    () => new DefaultChatTransport({ api: "/api/chat/stream" }),
-  );
+  const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat/stream" }));
   const [input, setInput] = useState("");
   const [modelKey, setModelKey] = useState(defaultModelKey);
   const [promptTemplateId, setPromptTemplateId] = useState("");
@@ -252,7 +255,9 @@ export function AgentChatComposer({
               输入区
             </h3>
           </div>
-          <Badge className={cn(status === "streaming" ? "border-[rgba(50,156,149,0.28)]" : undefined)}>
+          <Badge
+            className={cn(status === "streaming" ? "border-[rgba(50,156,149,0.28)]" : undefined)}
+          >
             {status}
           </Badge>
         </div>
@@ -272,9 +277,7 @@ export function AgentChatWorkspace(props: {
   defaultModelKey: string;
 }) {
   const router = useRouter();
-  const [transport] = useState(
-    () => new DefaultChatTransport({ api: "/api/chat/stream" }),
-  );
+  const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat/stream" }));
   const [input, setInput] = useState("");
   const [modelKey, setModelKey] = useState(props.defaultModelKey);
   const [promptTemplateId, setPromptTemplateId] = useState("");
@@ -345,7 +348,9 @@ export function AgentChatWorkspace(props: {
                 输入区
               </h3>
             </div>
-            <Badge className={cn(status === "streaming" ? "border-[rgba(50,156,149,0.28)]" : undefined)}>
+            <Badge
+              className={cn(status === "streaming" ? "border-[rgba(50,156,149,0.28)]" : undefined)}
+            >
               {status}
             </Badge>
           </div>

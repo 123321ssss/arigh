@@ -23,7 +23,7 @@ export default async function MemberHomePage() {
       user={user}
       currentPath="/app"
       title="成员工作台"
-      subtitle="从左侧会话目录进入已有任务，或新建一条对话开始一次新的内部协作。"
+      subtitle="从左侧会话目录进入已有任务，或新建一条对话开始新的内部协作。每条消息发送前都可以切换模型。"
     >
       <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
         <ConversationRailCard conversations={conversations} defaultModel={defaultModel} />
@@ -32,10 +32,10 @@ export default async function MemberHomePage() {
             <Badge>Workspace Overview</Badge>
             <div className="space-y-3">
               <h2 className="font-[family-name:var(--font-display)] text-4xl text-[var(--ink-strong)]">
-                对话、模板与 Agent，在同一个工作面里协作
+                对话、模板与 Agent，在同一工作面里协作
               </h2>
               <p className="max-w-3xl text-sm leading-8 text-[var(--muted)]">
-                这版原型默认按成员最常见的流程组织: 先进入会话，再在同页完成模型选择、模板引用和流式执行。管理员无法从后台直接查看你的正文内容。
+                新版成员区把逐消息模型切换放在输入区旁边。你可以在同一会话里先用低成本模型整理，再切到高质量模型润色，系统会按真实调用模型记账。
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
@@ -71,7 +71,7 @@ export default async function MemberHomePage() {
                   <p className="text-lg font-semibold">推荐动作</p>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[rgba(255,252,244,0.72)]">
-                  直接打开最近一条会话，验证流式输出、会话历史、Agent 轨迹和成本记账是否连通。
+                  直接打开最近一条会话，验证流式输出、会话历史、Agent 轨迹和按模型记账是否已经连通。
                 </p>
                 <div className="mt-5">
                   <Link href={conversations[0] ? `/app/c/${conversations[0].id}` : "/app"}>
@@ -88,7 +88,7 @@ export default async function MemberHomePage() {
                   <p className="text-lg font-semibold text-[var(--ink-strong)]">隐私边界</p>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-                  管理台默认只看账号、用量、会话标题和审计事件，不提供 transcript viewer。成员区的正文与工具结果按应用层加密存储。
+                  管理后台默认只看账号、用量、会话标题和审计事件，不提供 transcript viewer。成员区的正文与工具结果按应用层加密存储。
                 </p>
               </Panel>
             </div>

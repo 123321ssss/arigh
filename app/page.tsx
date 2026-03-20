@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Sparkles, Workflow } from "lucide-react";
+import { ArrowRight, KeyRound, Sparkles, Workflow } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,19 +8,19 @@ import { Reveal } from "@/components/ui/reveal";
 
 const featureCards = [
   {
-    icon: ShieldCheck,
-    title: "管理员视角",
-    description: "邀请成员、控制模型预算、查看聚合统计与审计事件，不默认读取成员正文。",
+    icon: KeyRound,
+    title: "邀请码准入",
+    description: "网站可以公开展示，但成员注册必须持有管理员生成的邀请码或注册链接。",
   },
   {
     icon: Sparkles,
-    title: "成员工作区",
-    description: "沉浸式流式对话、Prompt 模板、低成本模型切换，以及会话级 Agent 轨迹。",
+    title: "逐消息切模型",
+    description: "成员在同一会话里按消息切换 GPT 模型，后台按真实调用模型记账与审计。",
   },
   {
     icon: Workflow,
     title: "短任务 Agent",
-    description: "内置计算、时钟、白名单抓取和模板查询工具，限制步数与成本边界。",
+    description: "内置计算、时钟、白名单抓取和提示模板查询工具，适合内部短链路任务。",
   },
 ];
 
@@ -34,24 +34,30 @@ export default function HomePage() {
             <Badge>Editorial AI Console</Badge>
             <div className="mt-8 max-w-3xl space-y-6">
               <h1 className="font-[family-name:var(--font-display)] text-5xl leading-[1.02] tracking-[0.02em] text-[var(--ink-strong)] md:text-7xl">
-                为内部团队设计的
+                面向内部团队的
                 <br />
-                AI 对话控制台
+                AI 对话工作台
               </h1>
               <p className="max-w-2xl text-base leading-8 text-[var(--muted)] md:text-lg">
-                成员专注对话与短任务 Agent，管理员掌控预算、模型、账号与审计。界面按“编辑部控制台”视觉语言构建，适合中国大陆团队先跑零成本原型，再迁移到稳定生产部署。
+                管理员维护成员、邀请码、模型目录和预算规则；成员在统一工作区发起对话、调用短任务
+                Agent，并按消息切换不同 GPT 模型。公开的是官网，受控的是准入。
               </p>
             </div>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link href="/login">
                 <Button size="lg">
-                  进入登录页
+                  登录工作台
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/app">
+              <Link href="/register">
                 <Button variant="secondary" size="lg">
-                  直接查看成员工作区
+                  用邀请码注册
+                </Button>
+              </Link>
+              <Link href="/setup">
+                <Button variant="ghost" size="lg">
+                  初始化管理员
                 </Button>
               </Link>
             </div>
@@ -88,7 +94,7 @@ export default function HomePage() {
                 <div className="rounded-[28px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-5">
                   <p className="font-[family-name:var(--font-display)] text-3xl">Admin</p>
                   <p className="mt-2 text-sm leading-7 text-[rgba(255,250,242,0.72)]">
-                    邀请成员，配置默认模型与预算，查看成本曲线、审计流与最近活动。
+                    管理员创建邀请码、调整成员状态、维护模型可用性、预算上限和系统提示词。
                   </p>
                   <div className="mt-4">
                     <Link href="/admin">
@@ -101,7 +107,7 @@ export default function HomePage() {
                 <div className="rounded-[28px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-5">
                   <p className="font-[family-name:var(--font-display)] text-3xl">Member</p>
                   <p className="mt-2 text-sm leading-7 text-[rgba(255,250,242,0.72)]">
-                    发起对话、调用短任务 Agent、选择 Prompt 模板，并保留私有历史。
+                    成员按会话协作，逐消息切换 GPT 模型，保留个人历史、Agent 轨迹和成本记录。
                   </p>
                   <div className="mt-4">
                     <Link href="/app">
@@ -114,17 +120,13 @@ export default function HomePage() {
               </div>
             </Panel>
             <Panel className="rounded-[34px] p-7">
-              <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Deploy</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Deployment</p>
               <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--ink-strong)]">
-                双轨部署
+                低成本部署
               </h2>
               <div className="mt-5 grid gap-3 text-sm leading-7 text-[var(--muted)]">
-                <p>
-                  原型环境: `Vercel Hobby + Supabase Free + 企业 SMTP`
-                </p>
-                <p>
-                  大陆稳定环境: `Next standalone + Docker/Nginx + 自有域名`
-                </p>
+                <p>原型环境：Vercel Hobby + Supabase + 单一 OpenAI-compatible provider</p>
+                <p>稳定环境：Next standalone + Docker/Nginx + 自有域名 + 服务端统一出海</p>
               </div>
             </Panel>
           </section>

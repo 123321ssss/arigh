@@ -6,11 +6,16 @@ export type ConversationStatus = "active" | "archived";
 
 export type AgentRunStatus = "ready" | "running" | "completed" | "failed";
 
+export type InviteCodeStatus = "active" | "revoked" | "expired" | "exhausted";
+
 export type AuditAction =
   | "auth.login"
+  | "auth.register"
+  | "auth.bootstrap"
   | "auth.logout"
   | "chat.stream"
-  | "member.invite"
+  | "invite-code.create"
+  | "invite-code.revoke"
   | "member.update"
   | "model.update"
   | "prompt.create";
@@ -37,13 +42,30 @@ export type SessionUser = {
   recentLoginAt: string;
 };
 
-export type Invite = {
-  id: string;
+export type AuthCredentialProfile = {
   email: string;
+  password: string;
+  displayName: string;
+};
+
+export type InviteCode = {
+  id: string;
+  code?: string;
+  codePreview: string;
   role: AppRole;
-  invitedBy: string;
-  status: "pending" | "accepted" | "expired";
+  createdBy: string;
+  status: InviteCodeStatus;
+  maxUses: number;
+  usedCount: number;
+  allowedEmailDomain?: string | null;
+  note?: string | null;
+  expiresAt?: string | null;
+  lastUsedAt?: string | null;
   createdAt: string;
+};
+
+export type RegisterWithInviteInput = AuthCredentialProfile & {
+  code: string;
 };
 
 export type ModelConfig = {
@@ -75,15 +97,24 @@ export type ConversationSummary = {
   status: ConversationStatus;
   updatedAt: string;
   ownerId: string;
+  defaultModelKey: string;
+  lastUsedModelKey: string;
   modelKey: string;
   estimatedCostUsd: number;
   messageCount: number;
   lastPreview: string;
 };
 
+export type MessageMeta = {
+  modelKey?: string;
+  modelLabel?: string;
+  promptTemplateId?: string | null;
+};
+
 export type StoredMessagePayload = {
   role: "user" | "assistant" | "system";
   parts: UIMessage["parts"];
+  metadata?: MessageMeta;
 };
 
 export type StoredMessage = {

@@ -13,7 +13,7 @@ export default async function AdminAuditPage() {
       user={admin}
       currentPath="/admin/audit"
       title="审计日志"
-      subtitle="记录邀请、成员变更、模型变更、登录与对话触发事件，用于最小必要的内部审计。"
+      subtitle="记录初始化、注册、登录、邀请码、成员变更、模型变更与对话触发事件，用于最小必要的内部审计。"
     >
       <AdminPanel.Section title="审计流" eyebrow="Audit Logs">
         <AuditFeed logs={logs} />

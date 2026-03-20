@@ -4,7 +4,7 @@ import type {
   AgentRun,
   AuditLog,
   ConversationSummary,
-  Invite,
+  InviteCode,
   ModelConfig,
   PromptTemplate,
   SessionUser,
@@ -18,7 +18,7 @@ import { encryptJson } from "@/lib/security/crypto";
 
 export type DemoState = {
   profiles: SessionUser[];
-  invites: Invite[];
+  inviteCodes: InviteCode[];
   conversations: ConversationSummary[];
   messages: StoredMessage[];
   agentRuns: AgentRun[];
@@ -37,8 +37,9 @@ function makeMessage(
   role: "user" | "assistant" | "system",
   parts: UIMessage["parts"],
   createdAt: string,
+  metadata?: StoredMessagePayload["metadata"],
 ): StoredMessage {
-  const payload: StoredMessagePayload = { role, parts };
+  const payload: StoredMessagePayload = { role, parts, metadata };
 
   return {
     id,
@@ -88,11 +89,11 @@ export function createDemoState(): DemoState {
       key: "editorial-fast",
       label: "Editorial Fast",
       providerModelId: "gpt-5.4-mini",
-      description: "低成本日常对话与摘要",
+      description: "低成本问答、摘要和轻量改写",
       enabled: true,
       defaultSystemPrompt:
-        "你是内部编辑部 AI 助手。回答时保持清晰、可靠、具体，优先给出可执行结果。",
-      promptPrefix: "请优先用简体中文回答，并用可执行建议收束。",
+        "你是内部编辑部 AI 助手。回答要清晰、谨慎、可执行，优先输出结论。",
+      promptPrefix: "默认使用简体中文，必要时用短段落和小标题组织答案。",
       inputCostPer1k: 0.0004,
       outputCostPer1k: 0.0016,
       monthlyBudgetUsd: 20,
@@ -101,12 +102,12 @@ export function createDemoState(): DemoState {
     {
       key: "editorial-quality",
       label: "Editorial Quality",
-      providerModelId: "gpt-5.4-mini",
-      description: "高质量写作、分析与多步推理",
+      providerModelId: "gpt-5.4",
+      description: "高质量写作、方案推演和复杂整理",
       enabled: true,
       defaultSystemPrompt:
-        "你是资深内部策略助手。需要输出结构化、审慎、可落地的中文答案。",
-      promptPrefix: "如有不确定性，先说明假设再给建议。",
+        "你是资深内部策略助手。需要输出结构化、可落地的中文方案。",
+      promptPrefix: "如有不确定性，先声明假设，再给建议。",
       inputCostPer1k: 0.002,
       outputCostPer1k: 0.008,
       monthlyBudgetUsd: 60,
@@ -116,10 +117,10 @@ export function createDemoState(): DemoState {
       key: "editorial-reasoning",
       label: "Editorial Reasoning",
       providerModelId: "gpt-5.4-mini",
-      description: "短任务 Agent 推理型模型",
+      description: "短任务 Agent 和多步推理",
       enabled: false,
-      defaultSystemPrompt: "你是高谨慎度 Agent。",
-      promptPrefix: "工具调用必须在必要时才触发。",
+      defaultSystemPrompt: "你是高谨慎度的内部 Agent。",
+      promptPrefix: "只有在必要时才触发工具调用。",
       inputCostPer1k: 0.003,
       outputCostPer1k: 0.012,
       monthlyBudgetUsd: 45,
@@ -132,9 +133,9 @@ export function createDemoState(): DemoState {
       id: "tpl-editorial-brief",
       name: "编辑选题 Brief",
       category: "编辑",
-      description: "将零散线索整理成选题 brief 与采访方向",
+      description: "把零散线索整理成选题 brief 与采访方向",
       content:
-        "把输入内容整理成选题 brief。输出包含：核心判断、受众、风险点、采访问题、下步行动。",
+        "把输入内容整理成选题 brief。输出包含：核心判断、受众、风险点、采访问题、下一步行动。",
       createdAt: "2026-03-18T16:10:00+08:00",
     },
     {
@@ -163,6 +164,8 @@ export function createDemoState(): DemoState {
       ownerId: "user-member-1",
       title: "AI 网关上线清单",
       status: "active",
+      defaultModelKey: "editorial-fast",
+      lastUsedModelKey: "editorial-fast",
       modelKey: "editorial-fast",
       estimatedCostUsd: 0.0842,
       messageCount: 4,
@@ -174,6 +177,8 @@ export function createDemoState(): DemoState {
       ownerId: "user-member-1",
       title: "管理台成员引导文案",
       status: "active",
+      defaultModelKey: "editorial-quality",
+      lastUsedModelKey: "editorial-quality",
       modelKey: "editorial-quality",
       estimatedCostUsd: 0.1932,
       messageCount: 2,
@@ -185,6 +190,8 @@ export function createDemoState(): DemoState {
       ownerId: "user-admin-1",
       title: "预算预警规则",
       status: "active",
+      defaultModelKey: "editorial-fast",
+      lastUsedModelKey: "editorial-fast",
       modelKey: "editorial-fast",
       estimatedCostUsd: 0.0315,
       messageCount: 2,
@@ -208,10 +215,11 @@ export function createDemoState(): DemoState {
       [
         {
           type: "text",
-          text: "我先按上线前、上线日、上线后三段整理，并把预算、防误配、告警回滚放进主清单。",
+          text: "我先按上线前、上线时、上线后三段整理，并把预算、告警、回滚联系人放进主清单。",
         },
       ],
       "2026-03-19T08:51:00+08:00",
+      { modelKey: "editorial-fast", modelLabel: "Editorial Fast" },
     ),
     makeMessage(
       "msg-003",
@@ -231,6 +239,7 @@ export function createDemoState(): DemoState {
         },
       ],
       "2026-03-19T08:58:00+08:00",
+      { modelKey: "editorial-fast", modelLabel: "Editorial Fast" },
     ),
     makeMessage(
       "msg-005",
@@ -246,10 +255,11 @@ export function createDemoState(): DemoState {
       [
         {
           type: "text",
-          text: "建议把首次进入拆成管理员和成员两条路径：管理员先配模型、预算与邀请；成员先创建会话并查看模板。",
+          text: "建议把首次进入拆成管理员和成员两条路径：管理员先配模型、预算与邀请码；成员先创建会话并查看模板。",
         },
       ],
       "2026-03-18T19:36:00+08:00",
+      { modelKey: "editorial-quality", modelLabel: "Editorial Quality" },
     ),
     makeMessage(
       "msg-007",
@@ -269,6 +279,7 @@ export function createDemoState(): DemoState {
         },
       ],
       "2026-03-19T07:40:00+08:00",
+      { modelKey: "editorial-fast", modelLabel: "Editorial Fast" },
     ),
   ];
 
@@ -288,7 +299,7 @@ export function createDemoState(): DemoState {
           status: "completed",
           startedAt: "2026-03-19T08:56:10+08:00",
           finishedAt: "2026-03-19T08:56:11+08:00",
-          detail: "命中提示词模板 `研发周报`，提炼上线值班清单结构。",
+          detail: "命中提示词模板“研发周报”，提炼上线值班卡片结构。",
         },
         {
           id: "step-2",
@@ -339,70 +350,64 @@ export function createDemoState(): DemoState {
       latencyMs: 1880,
       createdAt: "2026-03-19T07:40:00+08:00",
     },
-    {
-      id: "usage-004",
-      userId: "user-member-1",
-      conversationId: "conv-002",
-      modelKey: "editorial-fast",
-      inputTokens: 420,
-      outputTokens: 690,
-      estimatedCostUsd: 0.0496,
-      providerResponseId: "resp_004",
-      latencyMs: 1750,
-      createdAt: "2026-03-17T16:20:00+08:00",
-    },
-    {
-      id: "usage-005",
-      userId: "user-member-1",
-      conversationId: "conv-001",
-      modelKey: "editorial-fast",
-      inputTokens: 215,
-      outputTokens: 388,
-      estimatedCostUsd: 0.0252,
-      providerResponseId: "resp_005",
-      latencyMs: 1210,
-      createdAt: "2026-03-16T10:15:00+08:00",
-    },
   ];
 
   const auditLogs: AuditLog[] = [
     {
       id: "audit-001",
       actorId: "user-admin-1",
-      action: "member.invite",
-      detail: "邀请 `member@editorial.local` 进入成员工作区。",
+      action: "invite-code.create",
+      detail: "创建了内部演示邀请码。",
       createdAt: "2026-03-18T18:15:00+08:00",
     },
     {
       id: "audit-002",
       actorId: "user-admin-1",
       action: "model.update",
-      detail: "将 `Editorial Reasoning` 标记为停用。",
+      detail: "将 Editorial Reasoning 标记为停用。",
       createdAt: "2026-03-18T20:05:00+08:00",
     },
     {
       id: "audit-003",
       actorId: "user-member-1",
       action: "chat.stream",
-      detail: "在会话 `AI 网关上线清单` 中发起了一次流式推理。",
+      detail: "在会话“AI 网关上线清单”中发起了一次流式推理。",
       createdAt: "2026-03-19T08:58:00+08:00",
     },
   ];
 
-  const invites: Invite[] = [
+  const inviteCodes: InviteCode[] = [
     {
-      id: "invite-001",
-      email: "member@editorial.local",
+      id: "invite-code-001",
+      code: "EDITORIAL-DEMO-001",
+      codePreview: "EDITORI...001",
       role: "member",
-      invitedBy: "user-admin-1",
-      status: "accepted",
+      createdBy: "user-admin-1",
+      status: "exhausted",
+      maxUses: 1,
+      usedCount: 1,
+      allowedEmailDomain: "editorial.local",
+      note: "演示邀请码",
+      lastUsedAt: "2026-03-18T18:16:00+08:00",
       createdAt: "2026-03-18T18:15:00+08:00",
+    },
+    {
+      id: "invite-code-002",
+      code: "EDITORIAL-DEMO-OPEN",
+      codePreview: "EDITORI...OPEN",
+      role: "member",
+      createdBy: "user-admin-1",
+      status: "active",
+      maxUses: 5,
+      usedCount: 0,
+      note: "演示多次使用邀请码",
+      createdAt: "2026-03-19T08:20:00+08:00",
     },
   ];
 
   return {
     profiles,
-    invites,
+    inviteCodes,
     conversations: conversations.map((conversation) => ({
       ...conversation,
       lastPreview: compactText(conversation.lastPreview, 60),

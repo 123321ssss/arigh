@@ -46,6 +46,7 @@ export const env = {
   APP_NAME: normalizeString(process.env.APP_NAME) ?? "Editorial AI Console",
   APP_URL: resolveAppUrl(),
   APP_DEMO_MODE: normalizeString(process.env.APP_DEMO_MODE) !== "false",
+  APP_BOOTSTRAP_SECRET: normalizeString(process.env.APP_BOOTSTRAP_SECRET),
   APP_ENCRYPTION_SECRET:
     normalizeString(process.env.APP_ENCRYPTION_SECRET) ?? "editorial-ai-console-dev-secret",
   AI_BASE_URL: normalizeUrl(process.env.AI_BASE_URL, { defaultProtocol: "https" }),

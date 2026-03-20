@@ -12,8 +12,8 @@ export default async function AdminPromptsPage() {
     <AdminWorkspaceShell
       user={admin}
       currentPath="/admin/prompts"
-      title="提示词模板"
-      subtitle="把高频任务沉淀为管理员可维护的模板，成员在会话中可直接引用。"
+      title="提示模板"
+      subtitle="把高频任务沉淀成管理员可维护的模板，成员在会话中可直接引用，并叠加本次消息模型。"
     >
       <AdminPanel.Section title="模板库" eyebrow="Prompt Library">
         <PromptLibrary prompts={prompts} />

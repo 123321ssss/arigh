@@ -38,12 +38,31 @@ export const invites = pgTable("invites", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
 });
 
+export const inviteCodes = pgTable("invite_codes", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  codeHash: varchar("code_hash", { length: 128 }).notNull().unique(),
+  encryptedCode: text("encrypted_code").notNull(),
+  codePreview: varchar("code_preview", { length: 32 }).notNull(),
+  role: varchar("role", { length: 16 }).notNull(),
+  createdBy: varchar("created_by", { length: 64 }).notNull(),
+  status: varchar("status", { length: 16 }).notNull(),
+  maxUses: integer("max_uses").notNull(),
+  usedCount: integer("used_count").notNull(),
+  allowedEmailDomain: varchar("allowed_email_domain", { length: 120 }),
+  note: text("note"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
 export const conversations = pgTable("conversations", {
   id: varchar("id", { length: 64 }).primaryKey(),
   ownerId: varchar("owner_id", { length: 64 }).notNull(),
   title: varchar("title", { length: 160 }).notNull(),
   status: varchar("status", { length: 16 }).notNull(),
   modelKey: varchar("model_key", { length: 64 }).notNull(),
+  defaultModelKey: varchar("default_model_key", { length: 64 }).notNull(),
+  lastUsedModelKey: varchar("last_used_model_key", { length: 64 }).notNull(),
   estimatedCostUsd: numeric("estimated_cost_usd", {
     precision: 10,
     scale: 4,

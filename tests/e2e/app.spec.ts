@@ -8,11 +8,16 @@ test("member workspace streams a demo reply", async ({ page }) => {
   await page.getByRole("link", { name: /AI 网关上线清单/i }).click();
   await page.waitForURL("**/app/c/**");
 
-  await page.getByPlaceholder("输入一个成员可执行任务").fill("请帮我生成一次演示回复");
+  await page
+    .getByPlaceholder("输入一个成员可执行任务，例如：整理上线值班卡片、复盘本周模型成本、生成管理公告。")
+    .fill("请帮我生成一次演示回答。");
   await page.getByRole("button", { name: "发送任务" }).click();
 
-  await expect(page.getByText("已切换到本地演示流")).toBeVisible();
-  await expect(page.getByText("执行轨迹")).toBeVisible();
+  await expect(
+    page.locator("p").filter({ hasText: "请帮我生成一次演示回答。" }).first(),
+  ).toBeVisible();
+  await expect(page.getByText("Editorial Agent")).toHaveCount(3);
+  await expect(page.getByText("对话实录")).toBeVisible();
 });
 
 test("admin console shows members and usage", async ({ page }) => {
@@ -21,8 +26,8 @@ test("admin console shows members and usage", async ({ page }) => {
   await page.waitForURL("**/admin");
 
   await expect(page.getByText("管理员总览")).toBeVisible();
-  await page.getByRole("link", { name: "成员", exact: true }).click();
-  await expect(page.getByText("成员表")).toBeVisible();
+  await page.getByRole("link", { name: "成员与邀请码", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "生成邀请码" })).toBeVisible();
   await page.getByRole("link", { name: "用量", exact: true }).click();
-  await expect(page.getByText("每日成本走势")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "用量与成本" })).toBeVisible();
 });

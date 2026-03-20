@@ -12,10 +12,10 @@ export default async function AdminModelsPage() {
     <AdminWorkspaceShell
       user={admin}
       currentPath="/admin/models"
-      title="模型配置"
-      subtitle="维护模型可用状态、预算上限与默认 system prompt；原始 provider key 不在后台展示。"
+      title="模型目录"
+      subtitle="维护模型可用状态、provider model id、预算上限和默认 system prompt。成员发送前看到的模型切换列表来自这里。"
     >
-      <AdminPanel.Section title="模型清单" eyebrow="Model Registry">
+      <AdminPanel.Section title="模型列表" eyebrow="Model Registry">
         <ModelConfigBoard models={models} />
       </AdminPanel.Section>
     </AdminWorkspaceShell>
